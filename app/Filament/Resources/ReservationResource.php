@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 
@@ -84,7 +85,16 @@ class ReservationResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('user.name')
+                    ->translateLabel(),
+                TextColumn::make('track.title')
+                    ->translateLabel(),
+                TextColumn::make('start_time')
+                    ->translateLabel()
+                    ->dateTime('Y-m-d H:i'),
+                TextColumn::make('end_time')
+                    ->translateLabel()
+                    ->dateTime('Y-m-d H:i'),
             ])
             ->filters([
                 //
@@ -96,7 +106,11 @@ class ReservationResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make(),
+            ])
+            ->defaultSort('start_time', 'desc');
     }
 
     public static function getRelations(): array
