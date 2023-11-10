@@ -4,8 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReservationResource\Pages;
 use App\Models\Reservation;
-use App\Models\Track;
-use Carbon\CarbonPeriod;
+use App\Services\ReservationService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Form;
@@ -14,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Carbon;
 
 class ReservationResource extends Resource
 {
@@ -43,42 +41,11 @@ class ReservationResource extends Resource
                     ->live(),
                 Radio::make('track')
                     ->translateLabel()
-                    ->options(fn (Get $get) => self::getAvailableReservations($get))
+                    ->options(fn (Get $get) => (new ReservationService())->getAvailableReservations($get('date')))
                     ->hidden(fn (Get $get) => ! $get('date'))
                     ->required()
                     ->columnSpan(2),
             ]);
-    }
-
-    public static function getAvailableReservations(Get $get): array
-    {
-        $date = Carbon::parse($get('date'));
-        $startPeriod = $date->copy()->hour(14);
-        $endPeriod = $date->copy()->hour(16);
-        $times = CarbonPeriod::create($startPeriod, '1 hour', $endPeriod);
-        $availableReservations = [];
-
-        $tracks = Track::with([
-            'reservations' => function ($q) use ($startPeriod, $endPeriod) {
-                $q->whereBetween('start_time', [$startPeriod, $endPeriod]);
-            },
-        ])
-            ->get();
-
-        foreach ($tracks as $track) {
-            $reservations = $track->reservations->pluck('start_time')->toArray();
-
-            $availableTimes = $times->copy()->filter(function ($time) use ($reservations) {
-                return ! in_array($time, $reservations) && ! $time->isPast();
-            })->toArray();
-
-            foreach ($availableTimes as $time) {
-                $key = $track->id.'-'.$time->format('H');
-                $availableReservations[$key] = $track->title.' '.$time->format('H:i');
-            }
-        }
-
-        return $availableReservations;
     }
 
     public static function table(Table $table): Table
