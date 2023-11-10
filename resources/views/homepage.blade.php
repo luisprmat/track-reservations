@@ -1,3 +1,3 @@
 <x-app-layout>
-    App Layout Works!
+    <livewire:reservation-form />
 </x-app-layout>
