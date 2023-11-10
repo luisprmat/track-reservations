@@ -99,9 +99,7 @@ class ReservationResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
+            ->actions([])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -125,7 +123,6 @@ class ReservationResource extends Resource
         return [
             'index' => Pages\ListReservations::route('/'),
             'create' => Pages\CreateReservation::route('/create'),
-            'edit' => Pages\EditReservation::route('/{record}/edit'),
         ];
     }
 }
